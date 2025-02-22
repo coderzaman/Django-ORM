@@ -1,4 +1,4 @@
-from core.models import Restaurant, Rating
+from core.models import Restaurant, Rating, Sale
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import connection
@@ -118,11 +118,124 @@ from pprint import pprint
 
 
 # Querying related records in Django ORM
+# def run():
+#     rating = Rating.objects.first()
+    
+#     # select related records for restaurant table
+#     name = rating.restaurant.name
+    
+#     print(name)
+    
+
+# Querying reverse relations in Django
+# def run():
+    # restaurant = Restaurant.objects.first()
+    
+    #print(restaurant.rating_set.all())    
+    
+    # You can override the FOO_set name by setting the related_name parameter in the ForeignKey definition.
+    # print(restaurant.ratings.all())
+    
+    # Sale.objects.create(
+    #     restaurant = Restaurant.objects.first(),
+    #     income = 30.34,
+    #     datetime = timezone.now(),
+    # )
+    
+     
+    # Sale.objects.create(
+    #     restaurant = Restaurant.objects.first(),
+    #     income = 20.34,
+    #     datetime = timezone.now(),
+    # )
+    
+     
+    # Sale.objects.create(
+    #     restaurant = Restaurant.objects.last(),
+    #     income = 40.34,
+    #     datetime = timezone.now(),
+    # )
+    
+     
+    # Sale.objects.create(
+    #     restaurant = Restaurant.objects.last(),
+    #     income = 50.34,
+    #     datetime = timezone.now(),
+    # )
+    
+    # print(Restaurant.objects.first().sales.all())
+
+
+# Getting OR creating data with Model.objects.get_or_create()
+
+# def run():
+#     restaurant = Restaurant.objects.last()
+#     user = User.objects.last()
+    
+    # print(Rating.objects.get_or_create(
+    #    user = user,
+    #    restaurant = restaurant,
+    #    rating = Rating.Rating.WORST 
+    # )) 
+    
+    # pprint(connection.queries)
+    
+    # this execute four if not data exist in db
+    # First: restaurant = Restaurant.objects.last()
+    # Second: user = User.objects.last()
+    # Third: Select the row if exist(Check of each individual with AND)
+    # Four: True Then execute Insert query if false not execute the insert query 
+    
+    # get_or_create  return a tuple
+    
+    # rating, created = Rating.objects.get_or_create(
+    #    user = user,
+    #    restaurant = restaurant,
+    #    rating = Rating.Rating.WORST)
+
+    # print(created) # It should be false
+    # pprint(connection.queries) # Now execute three queries expect insert
+    
+    # # We can Apply some operation 
+    
+    # if created:
+    #     print("Some things here")
+
+# def run():
+#     restaurant = Restaurant.objects.last()
+#     user = User.objects.last()
+    
+#     Rating.objects.create(
+#         user = user,
+#         restaurant = restaurant,
+#         rating = 9 # Is assign value to database because of validator are not validate in database level
+#         # It validate on Model form
+#     )
+    
+#     rating =  Rating(user = user, restaurant = restaurant, rating = 9)
+    
+#     rating.full_clean() # Now validator add to the raise the validation errors. Because validate added to the field 
+    
+    
+    
+#     rating.save()
+    
+
+# Update individual Records
+
 def run():
-    rating = Rating.objects.first()
+    restaurant = Restaurant()
     
-    # select related records for restaurant table
-    name = rating.restaurant.name
+    restaurant.name = "Bangladeshi Restaurant 2"
+    restaurant.restaurant_type = Restaurant.TypeChoices.BANGLADESHI
+    restaurant.date_opened = timezone.now()
+    restaurant.latitude = 90.3
+    restaurant.longitude = 123.4
     
-    print(name)
+    # restaurant = Restaurant.objects.first()
     
+    # restaurant.name = "New Restaurant"
+    # restaurant.save(update_fields=['name', 'website'])
+    
+    # pprint(connection.queries)
+
