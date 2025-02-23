@@ -223,14 +223,14 @@ from pprint import pprint
 
 # Update individual Records
 
-def run():
-    restaurant = Restaurant()
+# def run():
+#     restaurant = Restaurant()
     
-    restaurant.name = "Bangladeshi Restaurant 2"
-    restaurant.restaurant_type = Restaurant.TypeChoices.BANGLADESHI
-    restaurant.date_opened = timezone.now()
-    restaurant.latitude = 90.3
-    restaurant.longitude = 123.4
+#     restaurant.name = "Bangladeshi Restaurant 2"
+#     restaurant.restaurant_type = Restaurant.TypeChoices.BANGLADESHI
+#     restaurant.date_opened = timezone.now()
+#     restaurant.latitude = 90.3
+#     restaurant.longitude = 123.4
     
     # restaurant = Restaurant.objects.first()
     
@@ -239,3 +239,77 @@ def run():
     
     # pprint(connection.queries)
 
+
+# Update all the date_opened time to now
+
+# def run():
+#     # restaurant = Restaurant.objects.all()
+    
+#     restaurant = Restaurant.objects.filter(name__startswith="P")
+   
+#     restaurant.update(
+#         date_opened = timezone.now() - timezone.timedelta(365),
+#         # We can change multiple field with update field
+#         website='https://test.com'
+#     )
+    
+#     pprint(connection.queries)
+
+# Deleting model instances with model delete() function
+
+# def run():
+#     restaurant  = Restaurant.objects.first()
+    
+#     print(restaurant.delete())
+    
+#     pprint(connection.queries)
+
+
+# def run():
+#     Restaurant.objects.create(
+#         name = "Bangladeshi Restaurant",
+#         restaurant_type = Restaurant.TypeChoices.BANGLADESHI,
+#         date_opened = timezone.now(),
+#         latitude = 90.34,
+#         longitude = 130.42,
+#     )
+    
+#     Restaurant.objects.create(
+#         name = "Chinese Restaurant",
+#         restaurant_type = Restaurant.TypeChoices.CHINESE,
+#         date_opened = timezone.now(),
+#         latitude = 91.34,
+#         longitude = 120.42,
+#     )
+     
+#     Restaurant.objects.create(
+#         name = "Italian Restaurant",
+#         restaurant_type = Restaurant.TypeChoices.ITALIAN,
+#         date_opened = timezone.now(),
+#         latitude = 190.34,
+#         longitude = 123.42,
+#     )
+#     Restaurant.objects.create(
+#         name = "Greek Restaurant",
+#         restaurant_type = Restaurant.TypeChoices.GREEK,
+#         date_opened = timezone.now(),
+#         latitude = 190.34,
+#         longitude = 134.42,
+#     )
+    
+#     Restaurant.objects.create(
+#         name = "Fast Food",
+#         restaurant_type = Restaurant.TypeChoices.FASTFOOD,
+#         date_opened = timezone.now(),
+#         latitude = 97.34,
+#         longitude = 170.42,
+#     )
+
+# Django QuerySet delete() method to remove multiple objects
+
+
+def run():
+    
+    print(Restaurant.objects.all().delete())
+    
+    pprint(connection.queries)
