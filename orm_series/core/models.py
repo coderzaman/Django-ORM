@@ -15,6 +15,7 @@ class Restaurant(models.Model):
         CHINESE = "CH", "Chinese"
         ITALIAN = "IT", "Italian"
         GREEK = "GR", "Greek"
+        MEXICAN = "MX", "Mexican"
         FASTFOOD = "FF", "Fast Food"
         OTHER = "OT", "Other"
         DEFAULT = "", "-------Select Option-------"

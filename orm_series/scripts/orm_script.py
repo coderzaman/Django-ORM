@@ -308,8 +308,114 @@ from pprint import pprint
 # Django QuerySet delete() method to remove multiple objects
 
 
+# def run():
+    
+#     print(Restaurant.objects.all().delete())
+    
+#     pprint(connection.queries)
+
+
+# Filtering QuerySets with filter() method 
+
+
+# def run():
+#     # Filter return a query set where have no object of records
+#     print(Restaurant.objects.filter(restaurant_type=Restaurant.TypeChoices.BANGLADESHI))
+    
+#     restaurant = Restaurant.objects.filter(restaurant_type=Restaurant.TypeChoices.BANGLADESHI)
+    
+#     # count function return no item in query set
+#     print(restaurant.count())
+    
+#     pprint(connection.queries)
+
+
+# Getting a single model back with the get() method
+
+# def run():
+#     restaurant = Restaurant.objects.get(name="Pizzeria 1")
+    
+#     # If restaurant found it return only this record object
+#     print(restaurant)
+
+# def run():
+#     restaurant = Restaurant.objects.get(name="Something Wrong")
+    
+#     # If Record is not found it Raise error
+#     print(restaurant)
+
+
+# exist function
+# def run():
+#     restaurant = Restaurant.objects.filter(name="Something Wrong")
+    
+#     # Returns False if the QuerySet is empty
+#     print(restaurant.exists())  
+    
+#     # Returns True if the QuerySet contains at least one record
+#     restaurant = Restaurant.objects.filter(name="Pizzeria 1")
+#     print(restaurant.exists())
+
+# Multiple AND conditions with the filter() method
+# def run(): 
+#     chinese = Restaurant.TypeChoices.CHINESE
+    
+#     # Applying multiple filter conditions (AND logic)
+#     restaurants = Restaurant.objects.filter(restaurant_type=chinese, name__startswith="C")
+    
+#     print(restaurants)
+
+# # Filtering QuerySets with the “in” lookup
+# def run():
+#     chinese = Restaurant.TypeChoices.CHINESE
+#     italian = Restaurant.TypeChoices.ITALIAN
+#     bangladeshi = Restaurant.TypeChoices.BANGLADESHI
+    
+#     check_types = [chinese, bangladeshi,italian]
+    
+#     # `in` lookup takes a list or tuple
+#     restaurants = Restaurant.objects.filter(
+#         restaurant_type__in=check_types
+#     )
+    
+#     print(restaurants)
+
+# Filtering QuerySets with the exclude() method
+
+# def run():
+#     chinese = Restaurant.TypeChoices.CHINESE
+    
+#     # Exclude all records where restaurant_type is CHINESE
+#     restaurants = Restaurant.objects.exclude(restaurant_type=chinese)
+#     print(restaurants)
+    
+#     # Exclude records where restaurant_type is CHINESE and name starts with "C"
+#     restaurants = Restaurant.objects.exclude(restaurant_type=chinese, name__startswith="C")
+#     print(restaurants)
+
+
+# Filtering QuerySets with “lt” and “gt” lookups
+# def run():
+#     # Fetch restaurants where the name starts with A, B, C, D (less than 'E')
+#     restaurants = Restaurant.objects.filter(name__lt='E')
+#     print(restaurants)
+
+#     # Fetch restaurants where latitude is less than 80
+#     restaurants = Restaurant.objects.filter(latitude__lt=80)
+#     print(restaurants)
+
+#     # Fetch sales records where income is greater than or equal to 50
+#     sales = Sale.objects.filter(income__gte=50)
+#     print(sales)
+
+# Filtering QuerySets with the range lookup
+# It like Between in SQL
 def run():
-    
-    print(Restaurant.objects.all().delete())
-    
+    # Fetch sales records where income is between 50 and 60 (inclusive)
+    sales = Sale.objects.filter(income__range=(50, 60))
+
+    # Print income values from the filtered results
+    print([sales.income for sales in sales])
+
+    # Display executed SQL queries
     pprint(connection.queries)
