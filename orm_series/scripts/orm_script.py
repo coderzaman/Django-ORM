@@ -410,12 +410,124 @@ from pprint import pprint
 
 # Filtering QuerySets with the range lookup
 # It like Between in SQL
-def run():
-    # Fetch sales records where income is between 50 and 60 (inclusive)
-    sales = Sale.objects.filter(income__range=(50, 60))
+# def run():
+#     # Fetch sales records where income is between 50 and 60 (inclusive)
+#     sales = Sale.objects.filter(income__range=(50, 60))
 
-    # Print income values from the filtered results
-    print([sales.income for sales in sales])
+#     # Print income values from the filtered results
+#     print([sales.income for sales in sales])
 
-    # Display executed SQL queries
-    pprint(connection.queries)
+#     # Display executed SQL queries
+#     pprint(connection.queries)
+
+# Ordering QuerySets with the order_by() method
+# def run():
+#     # Order restaurants by name in ascending order (A-Z)
+#     restaurant = Restaurant.objects.order_by('name')
+#     print(restaurant)
+    
+#     # Order restaurants by name in descending order (Z-A)
+#     restaurant = Restaurant.objects.order_by('-name')
+#     print(restaurant) 
+    
+#     # Reverse an already ordered QuerySet (alternative to using '-')
+#     restaurant = Restaurant.objects.order_by('name').reverse()
+#     print(restaurant) 
+    
+#     # Ordering can be applied to text, numeric, and datetime fields.
+    
+#     # Order sales by most recent datetime (latest sales first)
+#     sales = Sale.objects.order_by('-datetime') 
+    
+#     for sale in sales:
+#         print(sale.datetime)
+    
+#     # Print executed queries
+#     pprint(connection.queries)
+
+#Case-Insensitive Orderings with the Lower Database Function
+# from django.db.models.functions import Lower
+
+# def run():
+#     # Order restaurant names case-insensitively
+#     restaurants = Restaurant.objects.order_by(Lower('name'))
+#     print(restaurants)
+    
+#     # Print executed queries
+#     pprint(connection.queries)
+    
+    
+# Indexing and Slicing into QuerySets - LIMIT and OFFSET SQL statement
+
+# def run():
+#     # Retrieve the 5th restaurant (index 4, zero-based index)
+#     restaurants = Restaurant.objects.order_by('name')[4]
+#     print(restaurants)
+    
+#     # Retrieve the first 4 restaurants
+#     restaurants = Restaurant.objects.order_by('name')[:4]
+#     print(restaurants)
+    
+#     # Retrieve restaurants from index 4 to the end
+#     restaurants = Restaurant.objects.order_by('name')[4:]
+#     print(restaurants)
+    
+#     # Retrieve restaurants from index 2 to 5 (excluding index 5)
+#     restaurants = Restaurant.objects.order_by('name')[2:5]
+#     print(restaurants)
+    
+#     # **Negative indexing is not supported:**
+#     # restaurants = Restaurant.objects.order_by('name')[-4:]
+
+# Adding ‘ordering’ field to model Meta class for default ordering
+# def run():
+#     restaurants = Restaurant.objects.all();
+#     print(restaurants)
+    
+#     pprint(connection.queries)
+
+
+#  earliest() and latest() functions
+# def run():
+#     # Fetch the earliest restaurant based on latitude (smallest latitude value)
+#     restaurant = Restaurant.objects.earliest('latitude')
+#     print(restaurant)
+
+#     # Fetch the earliest restaurant in descending order (largest latitude value)
+#     restaurant = Restaurant.objects.earliest('-latitude')
+#     print(restaurant)
+
+# def run():
+#     # Fetch the latest restaurant based on date opened
+#     restaurant = Restaurant.objects.latest('date_opened')
+#     print(restaurant)
+
+
+
+# # Effect of get_latest_by:
+# def run():
+#     # Fetch the latest restaurant based on the default get_latest_by field (date_opened)
+#     restaurant = Restaurant.objects.latest()
+#     print(restaurant)
+
+#     # You can still override the field manually
+#     restaurant = Restaurant.objects.latest('website')
+#     print(restaurant)
+
+
+# # Filtering by foreign key values
+
+# def run():
+#     #find all rating associated with a restaurant beginning with B
+    
+#     ratings = Rating.objects.filter(restaurant__name__startswith='B') 
+#     print(ratings)
+    
+#     # It execute inner join in sql
+#     pprint(connection.queries)
+    
+#     # let see another example it return all sales of bangladeshi restaurant
+#     bangladeshi = Restaurant.TypeChoices.BANGLADESHI
+    
+#     sales = Sale.objects.filter(restaurant__restaurant_type = bangladeshi)
+#     print(sales)

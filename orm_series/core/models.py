@@ -9,6 +9,8 @@ def start_with_a(value):
         raise ValidationError("Restaurant name Start with a")
 
 
+from django.db.models.functions import Lower
+
 class Restaurant(models.Model):
     class TypeChoices(models.TextChoices):
         BANGLADESHI = "BD", "Bangladeshi"
@@ -28,6 +30,9 @@ class Restaurant(models.Model):
     longitude = models.FloatField()
     
     
+    class Meta:
+        ordering = ['name', 'date_opened']
+        get_latest_by = 'date_opened'  # Sets default field for latest()
     def save(self, *args, **kwargs):
         
         print(self._state.adding)
