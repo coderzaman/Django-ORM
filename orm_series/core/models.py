@@ -30,9 +30,9 @@ class Restaurant(models.Model):
     longitude = models.FloatField()
     
     
-    class Meta:
-        ordering = ['name', 'date_opened']
-        get_latest_by = 'date_opened'  # Sets default field for latest()
+    # class Meta:
+    #     ordering = ['name', 'date_opened']
+    #     get_latest_by = 'date_opened'  # Sets default field for latest()
     def save(self, *args, **kwargs):
         
         print(self._state.adding)

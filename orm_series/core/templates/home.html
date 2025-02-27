@@ -1,16 +1,22 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title_block %}Django ORM{% endblock title_block %}
+{% block title_block %}
+  Django ORM
+{% endblock %}
 
 {% block body_block %}
-    <div class="row">
-        <div class="col-6 mt-4">
-            <form method="POST">
-                {% csrf_token %}
-                {{form.as_p}}
-                <input type="submit" value="Add" class="btn btn-success btn-sm">
-            </form>
-        </div>
+  <div class="row">
+    <div class="col-6 mt-4">
+      {% for restaurant in restaurants %}
+        <p>{{ restaurant.name }}</p>
+        <ul>
+          {% for rating in restaurant.ratings.all %}
+            <li>
+              <p>{{ rating.rating }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endfor %}
     </div>
-{% endblock body_block %}
-
+  </div>
+{% endblock %}
