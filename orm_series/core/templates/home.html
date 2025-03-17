@@ -7,7 +7,7 @@
 {% block body_block %}
   <div class="row">
     <div class="col-6 mt-4">
-      {% for restaurant in restaurants %}
+      {% comment %} {% for restaurant in restaurants %}
         <p>{{ restaurant.name }}</p>
         <ul>
           {% for rating in restaurant.ratings.all %}
@@ -16,7 +16,24 @@
             </li>
           {% endfor %}
         </ul>
+      {% endfor %} {% endcomment %}
+
+      {% comment %} <h2>Sales</h2>
+      {% for restaurant in restaurants %}
+        <p>{{ restaurant.name }}</p>
+        <ul>
+          {% for sale in restaurant.sales.all %}
+            <li>
+              <p>{{ sale.income }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endfor %} {% endcomment %}
+
+      {% for rating in ratings %}
+        <p>{{ rating.restaurant.get_restaurant_type_display }} - {{rating.rating}}  </p>
       {% endfor %}
+
     </div>
   </div>
 {% endblock %}
