@@ -621,36 +621,115 @@ from core.models import StaffRestaurant
 
 from django.db.models.functions import Upper
     
+# def run():
+#     #Values 
+#     restaurants = Restaurant.objects.values('name', 'date_opened')
+#     print(restaurants)     
+    
+#     # See query how query are execute in backend 
+#     pprint(connection.queries)
+    
+    
+#     # we can get only first, last or part item from it
+#     restaurant = Restaurant.objects.values('name').first()
+#     print(restaurant['name'])
+#     restaurant = Restaurant.objects.values('name').last()
+#     print(restaurant['name'])
+    
+#     # Get first five item
+#     restaurants = Restaurant.objects.values(name_upper=Upper('name'))[:5]
+#     print(restaurants)
+    
+#     for restaurant in restaurants:
+#         print(restaurant["name_upper"])
+    
+    
+#     # Getting Foreign Key data with values() function
+#     ratings = Rating.objects.values('rating','restaurant__name')
+#     print(ratings)
+#     print()
+#     # Apply Filter
+#     restaurant_type = Restaurant.TypeChoices.BANGLADESHI
+#     ratings = Rating.objects.filter(restaurant__restaurant_type=restaurant_type)
+#     print(ratings)
+
+
+# from django.db.models.functions import Lower
+
+
+# def run():
+#     restaurants = Restaurant.objects.filter(restaurant_type=Restaurant.TypeChoices.BANGLADESHI).values_list(Lower('name'), 'date_opened').first()
+#     print(restaurants[0], restaurants[1])
+    
+#     # flat function
+    
+#     sales = Sale.objects.values_list('income', flat=True)
+    
+#     print(sales)
+    
+#     for sale in sales:
+#         print(sale)
+
+
+
+# Aggregation
+
+from django.db.models import Count, Avg, Max, Min, StdDev, Sum
+
 def run():
-    #Values 
-    restaurants = Restaurant.objects.values('name', 'date_opened')
-    
-    print(restaurants)     
-    
-    # See query how query are execute in backend 
-    pprint(connection.queries)
+    # we can count no of row in restaurant table with count function 
+    print(Restaurant.objects.count())
     
     
-    # we can get only first, last or part item from it
-    restaurant = Restaurant.objects.values('name').first()
-    print(restaurant['name'])
-    restaurant = Restaurant.objects.values('name').last()
-    print(restaurant['name'])
+    # we can use filter function with count 
+    # print(connection.queries)
     
-    # Get first five item
-    restaurants = Restaurant.objects.values(name_upper=Upper('name'))[:5]
-    print(restaurants)
+    print(Restaurant.objects.filter(name__startswith='c').count())
     
-    for restaurant in restaurants:
-        print(restaurant["name_upper"])
+    # Django has additional Method for aggregation that is aggregate. In this method more complex aggregation can be perform. For this example we need to import Count function of django.db.models
     
     
-    # Getting Foreign Key data with values() function
-    ratings = Rating.objects.values('rating','restaurant__name')
-    print(ratings)
-    print()
-    # Apply Filter
-    restaurant_type = Restaurant.TypeChoices.BANGLADESHI
-    ratings = Rating.objects.filter(restaurant__restaurant_type=restaurant_type)
-    print(ratings)
+    # we can count individual row with this count function
     
+    print(Restaurant.objects.aggregate(Count('id')))
+    
+
+    
+    # pprint(connection.queries)
+    
+    """ 
+    'sql': 'SELECT COUNT("core_restaurant"."id") AS "id__count" FROM '
+    '"core_restaurant"',
+    'time': '0.000'
+    """
+    
+    # Here we see alias is id_count which is default. we can change it as our wish
+    
+    print(Restaurant.objects.aggregate(total=Count('id')))
+    
+    # Aggregate function is a terminal function for Django Queryset. It return a dictionary we can not chain additional function on to that. So Return key value pairs representing the aggregations that your're performing. You can then filter function after that's because this is a terminal clause for a query set 
+    
+    # Average
+    print(Rating.objects.aggregate(avg=Avg('rating')))
+    
+    # Apply Filter Function
+    print(Rating.objects.filter(restaurant__name__startswith='c').aggregate(avg=Avg('rating')))
+    
+    # Min, Max Function
+    print(Sale.objects.aggregate(max=Max('income')))
+    print(Sale.objects.aggregate(min=Min('income')))
+    
+    # Can  Aggregate function take multiple argument
+    print(Sale.objects.aggregate(
+        max=Max('income'),
+        min=Min('income'),
+        avg=Avg('income'),
+        staDv=StdDev('income'),
+        total=Sum('income')
+    ))
+
+    # Aggregate subset of value
+    one_month_ago = timezone.now() - timezone.timedelta(days=31)
+    
+    sales = Sale.objects.filter(datetime__gt=one_month_ago).aggregate(total=Sum('income'))
+    print(sales)
