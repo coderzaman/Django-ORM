@@ -1,4 +1,4 @@
-from core.models import Restaurant, Rating, Sale
+from core.models import Restaurant, Rating, Sale, Staff
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import connection
@@ -531,3 +531,126 @@ from pprint import pprint
     
 #     sales = Sale.objects.filter(restaurant__restaurant_type = bangladeshi)
 #     print(sales)
+
+# def run():
+#     # Create an Staff
+#     staff, created = Staff.objects.get_or_create(name="John Wick")
+#     print(staff)
+#     print(type(staff.restaurants)) # This object type is ManyRelatedManager. It is used handle many to many relationship in django
+    
+#     # Check Staff has any associated restaurant
+#     print(staff.restaurants.all()) # <QuerySet []> because we not associate any restaurant with staff 
+    
+#     # Create relationship or associate 
+#     staff.restaurants.add(Restaurant.objects.first())
+#     print(staff.restaurants.all())
+    
+#     #<QuerySet []>
+#     #<QuerySet [<Restaurant: Pizzeria 1>]>
+    
+#     # If we see on junction table it create association with staff and restaurant with their pk
+    
+#     # count(): No of associated entries
+#     print(staff.restaurants.count()) #1
+    
+#     # remove: Remove an association
+#     staff.restaurants.remove(Restaurant.objects.first())
+#     print(staff.restaurants.count()) #0
+    
+#     # set: create multiple association 
+#     staff.restaurants.set(Restaurant.objects.all()[:5])
+#     print(staff.restaurants.count()) #5
+    
+#     # clear: Remove all association
+#     staff.restaurants.clear()
+#     print(staff.restaurants.count()) #0
+    
+#     #filter: filter associate table data
+#     staff.restaurants.set(Restaurant.objects.all()[:5])
+#     italian = staff.restaurants.filter(restaurant_type=Restaurant.TypeChoices.ITALIAN)
+#     print(italian) #<QuerySet [<Restaurant: Pizzeria 1>, <Restaurant: Pizzeria 2>]>
+    
+#     # We can access other side of object with _set
+#     restaurant = Restaurant.objects.get(pk=25)
+#     print(restaurant.staff_set.all()) #<QuerySet [<Staff: John Wick>]>
+    
+#     # we can  also use here  add, remove, set, clear
+#     staff, created = Staff.objects.get_or_create(name="Vin Den")
+#     restaurant.staff_set.add(staff)
+    
+#     restaurant = Restaurant.objects.get(pk=30)
+#     restaurant.staff_set.set(Staff.objects.all())
+#     restaurant.staff_set.clear()
+
+from core.models import StaffRestaurant
+# import random
+
+# def run():
+#     staff, created = Staff.objects.get_or_create(name="John Wick")
+#     restaurant = Restaurant.objects.first()
+#     restaurant2 = Restaurant.objects.last()
+    
+#     # Create Function
+#     StaffRestaurant.objects.create(
+#         staff=staff, restaurant=restaurant,salary=300000
+#     )
+    
+#     StaffRestaurant.objects.create(
+#         staff=staff, restaurant=restaurant2,salary=400000
+#     )
+    
+#     #clear function
+#     # staff.restaurants.clear()
+#     staff, created = Staff.objects.get_or_create(name="John Wick")
+    
+#     #add Function
+#     staff.restaurants.add(Restaurant.objects.first(), through_defaults={'salary':20_000})
+    
+#     # other filled ith through_default Which take an dictionary
+#     staff.restaurants.clear()
+    
+#     #set function
+#     staff.restaurants.set(
+#         Restaurant.objects.all()[:10],
+#         through_defaults={'salary':random.randint(20_000, 80_000)})
+    
+#     # remove function
+#     restaurant = Restaurant.objects.first()
+#     staff.restaurants.remove(restaurant)
+    
+
+from django.db.models.functions import Upper
+    
+def run():
+    #Values 
+    restaurants = Restaurant.objects.values('name', 'date_opened')
+    
+    print(restaurants)     
+    
+    # See query how query are execute in backend 
+    pprint(connection.queries)
+    
+    
+    # we can get only first, last or part item from it
+    restaurant = Restaurant.objects.values('name').first()
+    print(restaurant['name'])
+    restaurant = Restaurant.objects.values('name').last()
+    print(restaurant['name'])
+    
+    # Get first five item
+    restaurants = Restaurant.objects.values(name_upper=Upper('name'))[:5]
+    print(restaurants)
+    
+    for restaurant in restaurants:
+        print(restaurant["name_upper"])
+    
+    
+    # Getting Foreign Key data with values() function
+    ratings = Rating.objects.values('rating','restaurant__name')
+    print(ratings)
+    print()
+    # Apply Filter
+    restaurant_type = Restaurant.TypeChoices.BANGLADESHI
+    ratings = Rating.objects.filter(restaurant__restaurant_type=restaurant_type)
+    print(ratings)
+    

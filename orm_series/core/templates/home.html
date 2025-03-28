@@ -30,9 +30,30 @@
         </ul>
       {% endfor %} {% endcomment %}
 
-      {% for rating in ratings %}
+      {% comment %} {% for rating in ratings %}
         <p>{{ rating.restaurant.get_restaurant_type_display }} - {{rating.rating}}  </p>
-      {% endfor %}
+      {% endfor %} {% endcomment %}
+
+
+     {% comment %} {% for restaurant in restaurants %}
+        <p>{{ restaurant.name }}</p>
+        <ul>
+          {% for rating in restaurant.ratings.all %}
+            <li>
+              <p>{{ rating.rating }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+        <p>Sales</p>
+        <ul>
+          {% for sale in restaurant.sales.all %}
+            <li>
+              <p>${{ sale.income }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endfor %} {% endcomment %}
+
 
     </div>
   </div>

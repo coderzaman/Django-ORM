@@ -11,6 +11,7 @@ def start_with_a(value):
 
 from django.db.models.functions import Lower
 
+
 class Restaurant(models.Model):
     class TypeChoices(models.TextChoices):
         BANGLADESHI = "BD", "Bangladeshi"
@@ -41,6 +42,17 @@ class Restaurant(models.Model):
     
     def __str__(self):
         return self.name
+class Staff(models.Model):
+    name = models.CharField(max_length=12)
+    restaurants = models.ManyToManyField(Restaurant, through="StaffRestaurant")
+    
+    def __str__(self):
+        return self.name
+
+class StaffRestaurant(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    salary = models.FloatField(null=True)
 
 class Rating(models.Model):
     
@@ -64,3 +76,5 @@ class Sale(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL, null=True, related_name='sales')
     income = models.DecimalField(max_digits=8, decimal_places=2) #This are the required
     datetime = models.DateTimeField()
+    
+    
