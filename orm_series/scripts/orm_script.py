@@ -674,62 +674,169 @@ from django.db.models.functions import Upper
 
 # Aggregation
 
-from django.db.models import Count, Avg, Max, Min, StdDev, Sum
+# from django.db.models import Count, Avg, Max, Min, StdDev, Sum
 
-def run():
-    # we can count no of row in restaurant table with count function 
-    print(Restaurant.objects.count())
+# def run():
+#     # we can count no of row in restaurant table with count function 
+#     print(Restaurant.objects.count())
     
     
-    # we can use filter function with count 
-    # print(connection.queries)
+#     # we can use filter function with count 
+#     # print(connection.queries)
     
-    print(Restaurant.objects.filter(name__startswith='c').count())
+#     print(Restaurant.objects.filter(name__startswith='c').count())
     
-    # Django has additional Method for aggregation that is aggregate. In this method more complex aggregation can be perform. For this example we need to import Count function of django.db.models
+#     # Django has additional Method for aggregation that is aggregate. In this method more complex aggregation can be perform. For this example we need to import Count function of django.db.models
     
     
-    # we can count individual row with this count function
+#     # we can count individual row with this count function
     
-    print(Restaurant.objects.aggregate(Count('id')))
+#     print(Restaurant.objects.aggregate(Count('id')))
     
 
     
-    # pprint(connection.queries)
+#     # pprint(connection.queries)
     
-    """ 
-    'sql': 'SELECT COUNT("core_restaurant"."id") AS "id__count" FROM '
-    '"core_restaurant"',
-    'time': '0.000'
-    """
+#     """ 
+#     'sql': 'SELECT COUNT("core_restaurant"."id") AS "id__count" FROM '
+#     '"core_restaurant"',
+#     'time': '0.000'
+#     """
     
-    # Here we see alias is id_count which is default. we can change it as our wish
+#     # Here we see alias is id_count which is default. we can change it as our wish
     
-    print(Restaurant.objects.aggregate(total=Count('id')))
+#     print(Restaurant.objects.aggregate(total=Count('id')))
     
-    # Aggregate function is a terminal function for Django Queryset. It return a dictionary we can not chain additional function on to that. So Return key value pairs representing the aggregations that your're performing. You can then filter function after that's because this is a terminal clause for a query set 
+#     # Aggregate function is a terminal function for Django Queryset. It return a dictionary we can not chain additional function on to that. So Return key value pairs representing the aggregations that your're performing. You can then filter function after that's because this is a terminal clause for a query set 
     
-    # Average
-    print(Rating.objects.aggregate(avg=Avg('rating')))
+#     # Average
+#     print(Rating.objects.aggregate(avg=Avg('rating')))
     
-    # Apply Filter Function
-    print(Rating.objects.filter(restaurant__name__startswith='c').aggregate(avg=Avg('rating')))
+#     # Apply Filter Function
+#     print(Rating.objects.filter(restaurant__name__startswith='c').aggregate(avg=Avg('rating')))
     
-    # Min, Max Function
-    print(Sale.objects.aggregate(max=Max('income')))
-    print(Sale.objects.aggregate(min=Min('income')))
+#     # Min, Max Function
+#     print(Sale.objects.aggregate(max=Max('income')))
+#     print(Sale.objects.aggregate(min=Min('income')))
     
-    # Can  Aggregate function take multiple argument
-    print(Sale.objects.aggregate(
-        max=Max('income'),
-        min=Min('income'),
-        avg=Avg('income'),
-        staDv=StdDev('income'),
-        total=Sum('income')
-    ))
+#     # Can  Aggregate function take multiple argument
+#     print(Sale.objects.aggregate(
+#         max=Max('income'),
+#         min=Min('income'),
+#         avg=Avg('income'),
+#         staDv=StdDev('income'),
+#         total=Sum('income')
+#     ))
 
-    # Aggregate subset of value
-    one_month_ago = timezone.now() - timezone.timedelta(days=31)
+#     # Aggregate subset of value
+#     one_month_ago = timezone.now() - timezone.timedelta(days=31)
     
-    sales = Sale.objects.filter(datetime__gt=one_month_ago).aggregate(total=Sum('income'))
-    print(sales)
+#     sales = Sale.objects.filter(datetime__gt=one_month_ago).aggregate(total=Sum('income'))
+#     print(sales)
+
+# # Annotation
+# # Difference between aggregation and annotation is that when you annotate values you're going to get a value added to each model in the queryset. That you have coming back from annotate function whereas the aggregate function does not do that. It returns a single value based on the aggregation so when you use the annotate function, that we're about to see rather then breaking all of the rows down to a single value the annotation is going to be applied to all of the model on the queryset. So Annotation can add new and important data to your Django models in a queryset.
+# from django.db.models import Count, Sum, CharField, Value, Avg
+# from django.db.models.functions import Upper, Length, Concat
+
+# def run():
+#     # Fetch all restaurants and get length of restaurant of each restaurant name
+#     restaurants = Restaurant.objects.annotate(res_len=Length('name'))
+    
+#     print(restaurants) # It return which have an extra field name res_len with existing field
+    
+#     # If we see this len of first restaurant
+#     print(restaurants.first().res_len)
+    
+#     # To get all restaurant and values 
+#     print(restaurants.values('name', 'res_len'))
+    
+#     print()
+#     # we can use filter statements with it
+#     print(Restaurant.objects.annotate(res_len = Length('name')).filter(res_len__gt=10).values('name', 'res_len'))
+
+#     # Concat: Another database function coming from database function module that is Concat that's used to concatenate two or more fields from the database
+    
+#     # Restaurant 1 [Rating: 4.3]
+#     # Value() = Value function add string with database field
+#     concatenation = Concat(
+#         'name', Value(' [Rating: '), Avg('ratings__rating'), Value(']'),
+#         output_field=CharField() # Giving the concatenation as string
+#     )
+    
+#     restaurants = Restaurant.objects.annotate(message=concatenation)
+    
+#     for r in restaurants:
+#         print(r.message)
+        
+#     print()
+    
+#     # Total Sales of each restaurants 
+#     res_sales = Restaurant.objects.annotate(total_sale=Sum('sales__income')).values('name','total_sale')
+   
+#     # res_sales = res_sales.
+    
+#     for r in res_sales:
+#         print(r['name'], r['total_sale'])
+        
+#     # Get count rating of each restaurant
+#     print()
+#     print()
+#     res_ratings = Restaurant.objects.annotate(count_rate=Count('ratings'))
+    
+#     for r in res_ratings:
+#         print(r.name, r.count_rate)
+    
+#     print()
+#     print()
+#     # Sum of rating per restaurants
+#     res_ratings = Restaurant.objects.annotate(total_rate=Sum('ratings__rating'))
+    
+ 
+#     for r in res_ratings:
+#         print(r.name, r.total_rate)
+    
+    
+#     # Get average rating for each restaurant 
+#     res_ratings = Restaurant.objects.annotate(avg_rate=Avg('ratings__rating'))
+    
+#     for r in res_ratings:
+#         print(r.avg_rate)
+    
+#     # Ordinarily, annotations are generated on a per-object basis - an annotated QuerySet will return one result for each object in the original QuerySet. However, when a values() clause is used to constrain the columns that are returned in the result set, the method for evaluating annotations is slightly different. Instead of returning an annotated result for each result in the original QuerySet, the original results are grouped according to the unique combinations of the fields specified in the values() clause. An annotation is then provided for each unique group; the annotation is computed over all members of the group.
+    
+#     print()
+#     print()
+    
+#     rating_count_base_type = Restaurant.objects.values('restaurant_type').annotate(rate_count=Count('ratings'))  
+    
+#     print(rating_count_base_type)
+    
+        
+#     print()
+#     print()
+    
+    
+#     # ordered by function
+#     total_sale = Restaurant.objects.annotate(total_sale=Sum('sales__income')).order_by('total_sale')
+    
+#     # for descending order we can extra - before total_sale
+#     #  total_sale = Restaurant.objects.annotate(total_sale=Sum('sales__income')).order_by('-total_sale')
+    
+#     for sale in total_sale:
+#         print(sale.name, sale.total_sale)
+    
+          
+#     print()
+#     print()
+    
+    
+#     # filter  function
+#     total_sale = Restaurant.objects.annotate(total_sale=Sum('sales__income')).order_by('total_sale').filter(total_sale__lte=300)
+    
+#     for sale in total_sale:
+#         print(sale.name, sale.total_sale)
+    
+#     # Apply aggregation on annotation field
+#     avg_sale = total_sale.aggregate(Avg('total_sale'))
+#     print(avg_sale)
