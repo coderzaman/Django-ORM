@@ -840,3 +840,23 @@ from django.db.models.functions import Upper
 #     # Apply aggregation on annotation field
 #     avg_sale = total_sale.aggregate(Avg('total_sale'))
 #     print(avg_sale)
+
+
+# def run():
+#     rating = Rating.objects.filter(rating__lte=3).first()
+    
+#     # Rating here pull database into python memory execute calculation and then push it again to database 
+#     rating.rating +=  1
+#     rating.save()
+#     pprint(connection.queries)
+#     """
+#         [{'sql': 'SELECT "core_rating"."id", "core_rating"."user_id", '
+#          '"core_rating"."restaurant_id", "core_rating"."rating" FROM '
+#          '"core_rating" WHERE "core_rating"."rating" <= 3 ORDER BY '
+#          '"core_rating"."id" ASC LIMIT 1',
+#         'time': '0.000'},
+#         {'sql': 'UPDATE "core_rating" SET "user_id" = 1, "restaurant_id" = 3, '
+#                 '"rating" = 2 WHERE "core_rating"."id" = 1',
+#         'time': '0.003'}]
+#     """
+
