@@ -29,14 +29,16 @@ class Restaurant(models.Model):
     date_opened = models.DateField()
     latitude = models.FloatField()
     longitude = models.FloatField()
-    
+    capacity = models.SmallIntegerField(null=True, blank=True)
+    nickname = models.CharField(max_length=200, null=True, blank=True)
+        
     
     # class Meta:
     #     ordering = ['name', 'date_opened']
     #     get_latest_by = 'date_opened'  # Sets default field for latest()
     def save(self, *args, **kwargs):
         
-        print(self._state.adding)
+        print(self._state.adding) # False = UPDATE, True = INSERT
         
         super().save(*args, **kwargs)
     

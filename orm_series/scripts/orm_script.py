@@ -860,3 +860,192 @@ from django.db.models.functions import Upper
 #         'time': '0.003'}]
 #     """
 
+# Django Q Objects
+
+# Complex lookups with Q objects¶
+# Keyword argument queries – in filter(), etc. – are “AND”ed together. If you need to execute more complex queries (for example, queries with OR statements), you can use Q objects.
+
+# A Q object (django.db.models.Q) is an object used to encapsulate a collection of keyword arguments. These keyword arguments are specified as in “Field lookups"
+
+# from django.db.models import Q, F 
+
+# def run():
+#     # Get all Italian or Mexican Restaurant
+#     it = Restaurant.TypeChoices.ITALIAN
+#     mex = Restaurant.TypeChoices.MEXICAN
+    
+#     # restaurants = Restaurant.objects.filter(restaurant_type=it, restaurant_type=mex)  # SyntaxError: keyword argument repeated: restaurant_type
+    
+#     # Solve this problem with Q Objects
+#     restaurants = Restaurant.objects.filter(
+#         Q(restaurant_type=it) | Q(restaurant_type=mex)
+#     ).values('name')
+
+    
+#     for r in restaurants:
+#         print(r['name'])
+    
+#     pprint(connection.queries)
+    
+    
+#     # Filtering with OR and NOT Conditions
+#     # Select those restaurants which name contains mexican or italian
+#     # restaurants = Restaurant.objects.filter(
+#     #  name__icontains=['italian','mexican']
+#     # ).values('name')
+    
+#     # Not work cause icontains or any other most of the function take string not list. For solve this problem we need to solve with Q Objects
+    
+#     restaurants = Restaurant.objects.filter(
+#      Q(name__icontains='italian') | Q(name__icontains='mexican')
+#     ).values('name')
+#     for r in restaurants:
+#         print(r['name'])
+#     # Select those restaurants which name contains mexican or italian or recently opened
+    
+#     it_or_max = Q(name__icontains='italian') | Q(name__icontains='mexican')
+  
+    
+#     recently_opened = Q(date_opened__gt = timezone.now() - timezone.timedelta(days=40))
+#     restaurants = Restaurant.objects.filter(it_or_max  | recently_opened)
+    
+#     print(restaurants)
+    
+#     # for recently not opened 
+#     recently_not_opened = ~ Q(date_opened__gt = timezone.now() - timezone.timedelta(days=40))
+#     restaurants = Restaurant.objects.filter(it_or_max  | recently_not_opened)
+    
+#     print(restaurants)
+    
+#     # More Complex Example:
+#     # - profit is greater then expenditure, OR
+#     # - restaurant name contains a number
+    
+#     name_has_num = Q(restaurant__name__regex=r"[0-9]+")
+#     profited = Q(income__gt=F('expenditure'))
+    
+#     print()
+ 
+#     sales = Sale.objects.filter(name_has_num | profited).values_list('restaurant__name',flat=True)
+#     # we can use also and here 
+#     # - profit is greater then expenditure, and
+#     # - restaurant name contains a number
+#     print()
+#     sales = Sale.objects.filter(name_has_num & profited).values_list('restaurant__name',flat=True)
+#     print(sales)
+#     print()
+#     # we optimize query using select_related or prefetch related
+#     sales = Sale.objects.filter(name_has_num & profited).select_related('restaurant').values_list('restaurant__name',flat=True)
+    
+#     for sale in sales:
+#         print(sale)
+
+
+# Django - COALESCE Function and Handling NULL Values in the Database
+
+# Adding a nullable field to a Django Model
+# add new field to restaurant, which default value is null
+# capacity = models.SmallIntegerField(null=True, blank=True)
+
+# Querying null data with “is null” lookup
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
+from django.db.models import F, Count, Q, Avg
+import random
+def run():
+    restaurants = Restaurant.objects.filter(capacity__isnull=True)
+    print(restaurants)
+    
+    restaurants = Restaurant.objects.all()[:2]
+    
+    for restaurant in restaurants:
+        restaurant.capacity = random.uniform(50,100)
+    
+    print()
+    print()
+    Restaurant.objects.bulk_update(restaurants, ['capacity'])
+    restaurants = Restaurant.objects.filter(capacity__isnull=False)
+    print(restaurants)
+    
+# Null values and String-Based fields (CharField, etc)
+# If True, Django will store empty values as NULL in the database. Default is False.
+
+# Avoid using null on string-based fields such as CharField and TextField. If a string-based field has null=True, that means it has two possible values for “no data”: NULL, and the empty string. In most cases, it’s redundant to have two possible values for “no data;” the Django convention is to use the empty string, not NULL. One exception is when a CharField has both unique=True and blank=True set. In this situation, null=True is required to avoid unique constraint violations when saving multiple objects with blank values.
+
+# In Restaurant model we add website filed as default empty string. Here we use URL field which subclass of url field
+# for example
+# website = models.URLField(default='', blank=True)
+
+
+# Ordering with null values in Django with order_by function
+# Default it order null value first and not null value in the last
+   
+    print()
+    print(
+        Restaurant.objects.order_by('capacity').values_list('capacity', flat=True)
+    )
+# <QuerySet [None, None, None, None, None, None, None, None, None, None, None, None, 58, 98]>
+    print()
+#    If we  order fill value first and null will be last we used f expression for this
+    print(
+         Restaurant.objects.order_by(F('capacity').asc(nulls_last=True)).values_list('capacity', flat=True)
+    )
+    
+    # If do not dill with the null value there is another way to doing thats
+    print(
+         Restaurant.objects.filter(capacity__isnull=False).order_by('capacity').values_list('capacity', flat=True)
+    )
+    
+    # COALESCE function in Django and databases
+    # Accepts a list of at least two field names or expressions and returns the first non-null value (note that an empty string is not considered a null value). Each argument must be of a similar type, so mixing text and numbers will result in a database error. 
+    
+    Restaurant.objects.update(capacity=None)
+    
+    print(
+        Restaurant.objects.aggregate(total_cap=Sum('capacity'))
+    )
+    
+    # {'total_cap': None}
+    
+    # If we calculation any value always a number we solve this problem with Coalesce
+    # If there is null value after calculation we grantee eliminate null value and given number or anything instead of it
+    print(
+        Restaurant.objects.aggregate(total_cap=Coalesce(Sum('capacity'),0))
+    )
+    
+    # when calculate avg in empty query set ot gives None
+    print(
+        Rating.objects.filter(rating__lt=0).aggregate(total_avg=Avg('rating'))
+    )
+    
+    # If eliminate it we can use Coalesce function here
+    print(
+        Rating.objects.filter(rating__lt=0).aggregate(total_avg=Coalesce(Avg('rating'),0.0))
+    )
+    
+    # we can solve it with default parameter
+    print(
+        Rating.objects.filter(rating__lt=0).aggregate(total=Avg('rating', default=0.0))
+    )
+    
+    # we add another field to Restaurant model name nickname
+    # nickname = models.CharField(max_length=200, null=True, blank=True
+    
+    # we Coalesce use for if value is not found then value filled with another.
+    # Here nickname not found name_value filled with name
+    
+    print()
+    print()
+    print(
+        Restaurant.objects.annotate(name_value = Coalesce(F('nickname'), F('name'))).values('name_value')
+    )
+    
+    # If we set 1 restaurant nickname set not null value 
+    restaurant = Restaurant.objects.first()
+    restaurant.nickname = "abcd"
+    restaurant.save()
+    
+    #Now it show first restaurant name_value as abcd cause nickname is set
+    print(
+        Restaurant.objects.annotate(name_value = Coalesce(F('nickname'), F('name'))).values('name_value')
+    )
