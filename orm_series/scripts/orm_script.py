@@ -948,104 +948,243 @@ from django.db.models.functions import Upper
 # capacity = models.SmallIntegerField(null=True, blank=True)
 
 # Querying null data with “is null” lookup
-from django.db.models import Sum
-from django.db.models.functions import Coalesce
-from django.db.models import F, Count, Q, Avg
-import random
-def run():
-    restaurants = Restaurant.objects.filter(capacity__isnull=True)
-    print(restaurants)
+# from django.db.models import Sum
+# from django.db.models.functions import Coalesce
+# from django.db.models import F, Count, Q, Avg
+# import random
+# def run():
+#     restaurants = Restaurant.objects.filter(capacity__isnull=True)
+#     print(restaurants)
     
-    restaurants = Restaurant.objects.all()[:2]
+#     restaurants = Restaurant.objects.all()[:2]
     
-    for restaurant in restaurants:
-        restaurant.capacity = random.uniform(50,100)
+#     for restaurant in restaurants:
+#         restaurant.capacity = random.uniform(50,100)
     
-    print()
-    print()
-    Restaurant.objects.bulk_update(restaurants, ['capacity'])
-    restaurants = Restaurant.objects.filter(capacity__isnull=False)
-    print(restaurants)
+#     print()
+#     print()
+#     Restaurant.objects.bulk_update(restaurants, ['capacity'])
+#     restaurants = Restaurant.objects.filter(capacity__isnull=False)
+#     print(restaurants)
     
-# Null values and String-Based fields (CharField, etc)
-# If True, Django will store empty values as NULL in the database. Default is False.
+# # Null values and String-Based fields (CharField, etc)
+# # If True, Django will store empty values as NULL in the database. Default is False.
 
-# Avoid using null on string-based fields such as CharField and TextField. If a string-based field has null=True, that means it has two possible values for “no data”: NULL, and the empty string. In most cases, it’s redundant to have two possible values for “no data;” the Django convention is to use the empty string, not NULL. One exception is when a CharField has both unique=True and blank=True set. In this situation, null=True is required to avoid unique constraint violations when saving multiple objects with blank values.
+# # Avoid using null on string-based fields such as CharField and TextField. If a string-based field has null=True, that means it has two possible values for “no data”: NULL, and the empty string. In most cases, it’s redundant to have two possible values for “no data;” the Django convention is to use the empty string, not NULL. One exception is when a CharField has both unique=True and blank=True set. In this situation, null=True is required to avoid unique constraint violations when saving multiple objects with blank values.
 
-# In Restaurant model we add website filed as default empty string. Here we use URL field which subclass of url field
-# for example
-# website = models.URLField(default='', blank=True)
+# # In Restaurant model we add website filed as default empty string. Here we use URL field which subclass of url field
+# # for example
+# # website = models.URLField(default='', blank=True)
 
 
-# Ordering with null values in Django with order_by function
-# Default it order null value first and not null value in the last
+# # Ordering with null values in Django with order_by function
+# # Default it order null value first and not null value in the last
    
-    print()
-    print(
-        Restaurant.objects.order_by('capacity').values_list('capacity', flat=True)
-    )
-# <QuerySet [None, None, None, None, None, None, None, None, None, None, None, None, 58, 98]>
-    print()
-#    If we  order fill value first and null will be last we used f expression for this
-    print(
-         Restaurant.objects.order_by(F('capacity').asc(nulls_last=True)).values_list('capacity', flat=True)
-    )
+#     print()
+#     print(
+#         Restaurant.objects.order_by('capacity').values_list('capacity', flat=True)
+#     )
+# # <QuerySet [None, None, None, None, None, None, None, None, None, None, None, None, 58, 98]>
+#     print()
+# #    If we  order fill value first and null will be last we used f expression for this
+#     print(
+#          Restaurant.objects.order_by(F('capacity').asc(nulls_last=True)).values_list('capacity', flat=True)
+#     )
     
-    # If do not dill with the null value there is another way to doing thats
-    print(
-         Restaurant.objects.filter(capacity__isnull=False).order_by('capacity').values_list('capacity', flat=True)
-    )
+#     # If do not dill with the null value there is another way to doing thats
+#     print(
+#          Restaurant.objects.filter(capacity__isnull=False).order_by('capacity').values_list('capacity', flat=True)
+#     )
     
-    # COALESCE function in Django and databases
-    # Accepts a list of at least two field names or expressions and returns the first non-null value (note that an empty string is not considered a null value). Each argument must be of a similar type, so mixing text and numbers will result in a database error. 
+#     # COALESCE function in Django and databases
+#     # Accepts a list of at least two field names or expressions and returns the first non-null value (note that an empty string is not considered a null value). Each argument must be of a similar type, so mixing text and numbers will result in a database error. 
     
-    Restaurant.objects.update(capacity=None)
+#     Restaurant.objects.update(capacity=None)
     
-    print(
-        Restaurant.objects.aggregate(total_cap=Sum('capacity'))
-    )
+#     print(
+#         Restaurant.objects.aggregate(total_cap=Sum('capacity'))
+#     )
     
-    # {'total_cap': None}
+#     # {'total_cap': None}
     
-    # If we calculation any value always a number we solve this problem with Coalesce
-    # If there is null value after calculation we grantee eliminate null value and given number or anything instead of it
-    print(
-        Restaurant.objects.aggregate(total_cap=Coalesce(Sum('capacity'),0))
-    )
+#     # If we calculation any value always a number we solve this problem with Coalesce
+#     # If there is null value after calculation we grantee eliminate null value and given number or anything instead of it
+#     print(
+#         Restaurant.objects.aggregate(total_cap=Coalesce(Sum('capacity'),0))
+#     )
     
-    # when calculate avg in empty query set ot gives None
-    print(
-        Rating.objects.filter(rating__lt=0).aggregate(total_avg=Avg('rating'))
-    )
+#     # when calculate avg in empty query set ot gives None
+#     print(
+#         Rating.objects.filter(rating__lt=0).aggregate(total_avg=Avg('rating'))
+#     )
     
-    # If eliminate it we can use Coalesce function here
-    print(
-        Rating.objects.filter(rating__lt=0).aggregate(total_avg=Coalesce(Avg('rating'),0.0))
-    )
+#     # If eliminate it we can use Coalesce function here
+#     print(
+#         Rating.objects.filter(rating__lt=0).aggregate(total_avg=Coalesce(Avg('rating'),0.0))
+#     )
     
-    # we can solve it with default parameter
-    print(
-        Rating.objects.filter(rating__lt=0).aggregate(total=Avg('rating', default=0.0))
-    )
+#     # we can solve it with default parameter
+#     print(
+#         Rating.objects.filter(rating__lt=0).aggregate(total=Avg('rating', default=0.0))
+#     )
     
-    # we add another field to Restaurant model name nickname
-    # nickname = models.CharField(max_length=200, null=True, blank=True
+#     # we add another field to Restaurant model name nickname
+#     # nickname = models.CharField(max_length=200, null=True, blank=True
     
-    # we Coalesce use for if value is not found then value filled with another.
-    # Here nickname not found name_value filled with name
+#     # we Coalesce use for if value is not found then value filled with another.
+#     # Here nickname not found name_value filled with name
     
-    print()
-    print()
-    print(
-        Restaurant.objects.annotate(name_value = Coalesce(F('nickname'), F('name'))).values('name_value')
-    )
+#     print()
+#     print()
+#     print(
+#         Restaurant.objects.annotate(name_value = Coalesce(F('nickname'), F('name'))).values('name_value')
+#     )
     
-    # If we set 1 restaurant nickname set not null value 
-    restaurant = Restaurant.objects.first()
-    restaurant.nickname = "abcd"
-    restaurant.save()
+#     # If we set 1 restaurant nickname set not null value 
+#     restaurant = Restaurant.objects.first()
+#     restaurant.nickname = "abcd"
+#     restaurant.save()
     
-    #Now it show first restaurant name_value as abcd cause nickname is set
-    print(
-        Restaurant.objects.annotate(name_value = Coalesce(F('nickname'), F('name'))).values('name_value')
-    )
+#     #Now it show first restaurant name_value as abcd cause nickname is set
+#     print(
+#  Restaurant.objects.annotate(name_value = Coalesce(F('nickname'), F('name'))).values('name_value')
+#     )
+
+# # Django Conditional Expressions / Case() and When() objects
+
+# # A Case() expression is like the if … elif … else statement in Python. Each condition in the provided When() objects is evaluated in order, until one evaluates to a truthful value. The result expression from the matching When() object is returned.
+
+# from django.db.models import F, Q, When,Case, Count, Avg, Value, Min, Max, CharField, Sum
+# import itertools
+# def run():
+    
+#     #Fetch Italian Restaurant
+#     italian = Restaurant.TypeChoices.ITALIAN
+    
+#     restaurants = Restaurant.objects.annotate(
+#         is_italian = Case(
+#             When(restaurant_type=italian, then=True),
+#             default=False
+#         )
+#     ) 
+    
+#     print(restaurants.filter(is_italian=True))
+#     print()
+    
+#     # Fetch Popular restaurant. Which have more than 8 sales
+#     restaurants = Restaurant.objects.annotate(
+#         n_sales=Count('sales'),
+#         popular_res = Case(
+#             When(n_sales__gt=8, then= True),
+#             default=False
+#         )
+#     ).values('name','n_sales','popular_res').order_by('-n_sales')
+    
+#     print(restaurants.filter(popular_res=True))
+#     print()
+    
+#     # Restaurant average rating > 3.5 and Restaurant has more than 1 rating, Multiple condition on When Clause. It works like and
+#     restaurants = Restaurant.objects.annotate(
+#         avg_rating=Avg('ratings__rating'),
+#         num_rating = Count('ratings__pk'),
+#         highly_rated = Case(
+#             When(avg_rating__gt=3.5, num_rating__gt=1, then=True),
+#             default= False
+#         )
+        
+#     ).values('name', 'avg_rating', 'num_rating').order_by('-avg_rating','-num_rating')
+    
+#     restaurants = restaurants.filter(highly_rated=True)
+    
+#     for r in restaurants:
+#         print('Restaurant Name:',r['name'],', Ratings:', r['avg_rating'],', No of Ratings:',r['num_rating'])
+    
+#     print()
+    
+#     # Multiple when in Case like if elif in python
+#     # We can create three bucket for rating 
+#     # Highly Rated, Averagely Rated, Badly Rated
+    
+#     restaurants = Restaurant.objects.annotate(
+#         avg_rating=Avg('ratings__rating')
+#     )
+    
+#     restaurants = restaurants.annotate(
+#         rating_bucket = Case(
+#             When(avg_rating__gt=3.5, then=Value('high')),
+#             When(avg_rating__range=(2.5,3.5), then=Value('average')),
+#             When(avg_rating__lt=2.5, then=Value('bad')),
+#             default=Value('not_rated')
+#         )
+#     )
+    
+#     print(restaurants.filter(rating_bucket='not_rated'))
+#     print()
+    
+#     type = Restaurant.TypeChoices
+    
+#     # Ad continent with Q object in CASE and WHEN
+#     restaurants = Restaurant.objects.annotate(
+#         continent = Case(
+#             When(Q(restaurant_type=type.GREEK) | Q(restaurant_type=type.ITALIAN), then=Value('europe')),
+#             When(Q(restaurant_type=type.BANGLADESHI) | Q(restaurant_type=type.CHINESE), then=Value('asian')),
+#             When(restaurant_type=type.MEXICAN, then=Value('north-american')),
+#             default=Value('N/A')
+#         )
+#     )
+    
+#     print(restaurants.filter(continent='asian').order_by('name')) 
+    
+#     # More clean code 
+#     europe = Q(restaurant_type=type.GREEK) | Q(restaurant_type=type.ITALIAN)
+#     asia = Q(restaurant_type=type.BANGLADESHI) | Q(restaurant_type=type.CHINESE)
+#     north_america = Q(restaurant_type=type.MEXICAN)
+    
+#     restaurants = Restaurant.objects.annotate(
+#         continent = Case(
+#             When(europe, then=Value('europe')),
+#             When(asia, then=Value('asian')),
+#             When(north_america, then=Value('north_american')),
+#             default=Value('N/A')
+#         )
+#     )
+    
+#     print(restaurants.filter(continent='asian').order_by('name')) 
+    
+#     print()
+#     print()
+#     # Aggregating total sales over each 10 day period, starting from the first sale up until the last
+#     first_sale = Sale.objects.aggregate(first_sale_date=Min('datetime'))['first_sale_date']
+#     last_sale = Sale.objects.aggregate(last_sale_date=Max('datetime'))['last_sale_date']
+    
+#     dates = []
+#     count = itertools.count()
+    
+#     # divide into each 10 days
+#     while(dt := first_sale + timezone.timedelta(days=10*next(count))) <= last_sale:
+#         dates.append(dt)
+    
+#     [print(date) for date in dates]
+    
+#     whens = [
+#         When(datetime__range=(dt, dt+timezone.timedelta(days=10)), then=Value(dt.date()))
+#         for dt in dates
+#     ]
+#     print()
+    
+#     print('whens: ', whens )
+#     print()
+    
+#     case = Case(
+#         *whens,
+#         output_field=CharField()
+#     )
+    
+#     print()
+#     print(case)
+#     print()
+    
+#     print(Sale.objects.annotate(
+#         date_range=case,   
+#     ).values('date_range').annotate(total_sales=Sum('income')))
+    
