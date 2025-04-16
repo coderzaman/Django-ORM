@@ -1283,3 +1283,20 @@ from django.db.models.functions import Upper
     
 #     print(restaurants)
     
+
+from django.db.models import Subquery, OuterRef, Exists, F 
+from django.db.models import F, Q, When,Case, Count, Avg, Value, Min, Max, CharField, Sum
+from django.utils import timezone
+from django.db import connection
+from core.models import Restaurant, Sale, Staff, Product, Order, Rating
+from django.db import transaction
+import time
+def run():
+    # Now we gonna demonstrate what select_for_update does
+    
+    with transaction.atomic():
+        # It going to lock the particular row and will return a single rule because it's using the get method that row is going to be locked which means other rows can not change any data with that object with that row until the transaction is completed
+        
+        book = Product.objects.select_for_update().get(name='Book') 
+        time.sleep(60)
+
