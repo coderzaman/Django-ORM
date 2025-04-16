@@ -1193,93 +1193,93 @@ from django.db.models.functions import Upper
 
 
 
-from django.db.models import Subquery, OuterRef, Exists
-from django.db.models import F, Q, When,Case, Count, Avg, Value, Min, Max, CharField, Sum
+# from django.db.models import Subquery, OuterRef, Exists
+# from django.db.models import F, Q, When,Case, Count, Avg, Value, Min, Max, CharField, Sum
 
-def run():
+# def run():
     
-    # Select all sales where restaurant id is IT, CH 
-    # SELECT * FROM core_sale
-    # WHERE core_sale.restaurant_id IN (SELECT id FROM core_restaurant WHERE restaurant_type IN ('IT', 'CH') )
-    # Result: 62 rows returned in 5ms
+#     # Select all sales where restaurant id is IT, CH 
+#     # SELECT * FROM core_sale
+#     # WHERE core_sale.restaurant_id IN (SELECT id FROM core_restaurant WHERE restaurant_type IN ('IT', 'CH') )
+#     # Result: 62 rows returned in 5ms
     
-    restaurants = Restaurant.objects.filter(restaurant_type__in=['IT','CH'])
-    sales = Sale.objects.filter(restaurant__in = Subquery(restaurants.values('pk')))
+#     restaurants = Restaurant.objects.filter(restaurant_type__in=['IT','CH'])
+#     sales = Sale.objects.filter(restaurant__in = Subquery(restaurants.values('pk')))
 
-    print(sales.count()) # 62
+#     print(sales.count()) # 62
     
-    # Select last sale of each restaurant
-    # SELECT id, name, restaurant_type, 
-    #     (SELECT income FROM core_sale
-    #     WHERE restaurant_id=core_restaurant.id 
-    #     ORDER BY datetime DESC 
-    #     LIMIT 1
-    #     ) AS last_sale
-    # FROM core_restaurant
-    # Result: 14 rows returned in 2ms
+#     # Select last sale of each restaurant
+#     # SELECT id, name, restaurant_type, 
+#     #     (SELECT income FROM core_sale
+#     #     WHERE restaurant_id=core_restaurant.id 
+#     #     ORDER BY datetime DESC 
+#     #     LIMIT 1
+#     #     ) AS last_sale
+#     # FROM core_restaurant
+#     # Result: 14 rows returned in 2ms
     
     
  
     
-    # annotate each Restaurant with the income generated from its MOST RECENT sale
-    sales = Sale.objects.filter(restaurant=OuterRef('pk')).order_by('-datetime')
+#     # annotate each Restaurant with the income generated from its MOST RECENT sale
+#     sales = Sale.objects.filter(restaurant=OuterRef('pk')).order_by('-datetime')
     
-    # Outer Query 
-    restaurants = Restaurant.objects.annotate(
-        last_sale_income=Subquery(sales.values('income')[:1])
-    )
+#     # Outer Query 
+#     restaurants = Restaurant.objects.annotate(
+#         last_sale_income=Subquery(sales.values('income')[:1])
+#     )
     
-    for r in restaurants:
-         print(f"{r.name}: {r.last_sale_income}")
+#     for r in restaurants:
+#          print(f"{r.name}: {r.last_sale_income}")
 
-    # We use F expression Here for calculate profit of recent sale
-    restaurants = Restaurant.objects.annotate(
-        last_sale_income=Subquery(sales.values('income')[:1]),
-        last_sale_expenditure=Subquery(sales.values('expenditure')[:1]),
-        profit=F('last_sale_income') - F('last_sale_expenditure'),
-    )
+#     # We use F expression Here for calculate profit of recent sale
+#     restaurants = Restaurant.objects.annotate(
+#         last_sale_income=Subquery(sales.values('income')[:1]),
+#         last_sale_expenditure=Subquery(sales.values('expenditure')[:1]),
+#         profit=F('last_sale_income') - F('last_sale_expenditure'),
+#     )
     
-    for r in restaurants:
-         print(f"{r.name}: {r.profit}")
+#     for r in restaurants:
+#          print(f"{r.name}: {r.profit}")
     
     
-    # Exists objects
-    # Exists is a Subquery subclass that uses an SQL EXISTS statement. In many cases it will perform better than a subquery since the database is able to stop evaluation of the subquery when a first matching row is found.
+#     # Exists objects
+#     # Exists is a Subquery subclass that uses an SQL EXISTS statement. In many cases it will perform better than a subquery since the database is able to stop evaluation of the subquery when a first matching row is found.
 
     
-    # Filter to restaurants that have any sales with income > 85
+#     # Filter to restaurants that have any sales with income > 85
     
-    restaurants = Restaurant.objects.all()
-    print(restaurants.count()) # 14
+#     restaurants = Restaurant.objects.all()
+#     print(restaurants.count()) # 14
     
     
-    restaurants = Restaurant.objects.filter(
-        Exists(Sale.objects.filter(restaurant=OuterRef('pk'), income__gt=85))
-    )
+#     restaurants = Restaurant.objects.filter(
+#         Exists(Sale.objects.filter(restaurant=OuterRef('pk'), income__gt=85))
+#     )
     
-    print(restaurants.count()) # 6
+#     print(restaurants.count()) # 6
     
-    #we can also not operator here. It is boolean operator.
-    restaurants = Restaurant.objects.filter(
-        ~Exists(Sale.objects.filter(restaurant=OuterRef('pk'), income__gt=85))
-    )
+#     #we can also not operator here. It is boolean operator.
+#     restaurants = Restaurant.objects.filter(
+#         ~Exists(Sale.objects.filter(restaurant=OuterRef('pk'), income__gt=85))
+#     )
     
-    print(restaurants.count()) # 8
+#     print(restaurants.count()) # 8
     
-    # Another Example
-    # Find all restaurant have minimum one five starts rating
-    restaurants = Restaurant.objects.filter(
-        Exists(Rating.objects.filter(restaurant=OuterRef('pk'), rating=5))
-    )
+#     # Another Example
+#     # Find all restaurant have minimum one five starts rating
+#     restaurants = Restaurant.objects.filter(
+#         Exists(Rating.objects.filter(restaurant=OuterRef('pk'), rating=5))
+#     )
     
-    print(restaurants)
+#     print(restaurants)
     
-    # All Restaurant that sell of last 30 days
-    last_five_days = timezone.now() - timezone.timedelta(days=30) 
+#     # All Restaurant that sell of last 30 days
+#     last_five_days = timezone.now() - timezone.timedelta(days=30) 
     
-    restaurants = Restaurant.objects.filter(
-        Exists(Sale.objects.filter(restaurant=OuterRef('pk'), datetime__gt=last_five_days))
-    )    
+#     restaurants = Restaurant.objects.filter(
+#         Exists(Sale.objects.filter(restaurant=OuterRef('pk'), datetime__gt=last_five_days))
+#     )    
     
-    print(restaurants)
+#     print(restaurants)
     

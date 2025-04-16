@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Sale, Rating, Restaurant
 # Create your views here.
 
@@ -122,3 +122,30 @@ def home(request):
         print(job.staff.name) 
     
    return render(request, 'home.html')  
+
+
+from django.shortcuts import render, redirect
+from core.forms import ProductOrderForm
+from django.db import transaction
+from functools import partial
+def email_user(email):
+     print(f"Dear {email} Thanks for your order")
+
+def order_product(request):
+     if request.method == "POST":
+         form = ProductOrderForm(request.POST)
+         
+         if form.is_valid():
+              with transaction.atomic():
+                    order = form.save()
+                    order.product.number_in_stock -= order.number_of_items
+                    order.product.save()
+              transaction.on_commit(partial(email_user, 'coder.@test.com'))
+              return redirect('order_product')
+         else:
+              context = {'form':form}
+              return render(request, 'order.html', context)          
+     
+     form = ProductOrderForm()
+     context = {'form':form}
+     return render(request, 'order.html', context)
