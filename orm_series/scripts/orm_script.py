@@ -1284,19 +1284,57 @@ from django.db.models.functions import Upper
 #     print(restaurants)
     
 
-from django.db.models import Subquery, OuterRef, Exists, F 
-from django.db.models import F, Q, When,Case, Count, Avg, Value, Min, Max, CharField, Sum
-from django.utils import timezone
-from django.db import connection
-from core.models import Restaurant, Sale, Staff, Product, Order, Rating
-from django.db import transaction
-import time
-def run():
-    # Now we gonna demonstrate what select_for_update does
+# from django.db.models import Subquery, OuterRef, Exists, F 
+# from django.db.models import F, Q, When,Case, Count, Avg, Value, Min, Max, CharField, Sum
+# from django.utils import timezone
+# from django.db import connection
+# from core.models import Restaurant, Sale, Staff, Product, Order, Rating
+# from django.db import transaction
+# import time
+# def run():
+#     # Now we gonna demonstrate what select_for_update does
     
-    with transaction.atomic():
-        # It going to lock the particular row and will return a single rule because it's using the get method that row is going to be locked which means other rows can not change any data with that object with that row until the transaction is completed
+#     with transaction.atomic():
+#         # It going to lock the particular row and will return a single rule because it's using the get method that row is going to be locked which means other rows can not change any data with that object with that row until the transaction is completed
         
-        book = Product.objects.select_for_update().get(name='Book') 
-        time.sleep(60)
+#         book = Product.objects.select_for_update().get(name='Book') 
+#         time.sleep(60)
+
+
+from django.contrib.contenttypes.models import ContentType
+from core.models import Rating
+
+def run():
+    # Get all content types
+    content_type = ContentType.objects.all()
+    
+    # Filter only models from 'core' app
+    core_app = content_type.filter(app_label='core')
+    [print(c.model) for c in core_app]
+    
+    print()  # Just spacing
+    
+    # Get ContentType instance for 'restaurant' model
+    content_type = ContentType.objects.get(app_label='core', model='restaurant')
+    print(content_type.model)
+    
+    # Get the actual model class from ContentType
+    restaurant_model = content_type.model_class()
+    print(restaurant_model.objects.all())
+    
+    # Fetch an actual object of the model using ContentType (if name is unique)
+    print(content_type.get_object_for_this_type(name='Chinese 2').restaurant_type)
+    
+    # --- Rating Model Demo ---
+    
+    # Get ContentType for a specific model class
+    rating_content_type = ContentType.objects.get_for_model(Rating)
+    print(rating_content_type)
+    print(rating_content_type.model)
+    
+    # Get model class from content type
+    print(rating_content_type.model_class())
+    
+    # Query all data from that model
+    print(rating_content_type.model_class().objects.all())
 
