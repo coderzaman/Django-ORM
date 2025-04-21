@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
+
+
 
 # Custom Validator 
 def start_with_a(value):
@@ -31,7 +35,7 @@ class Restaurant(models.Model):
     longitude = models.FloatField()
     capacity = models.SmallIntegerField(null=True, blank=True)
     nickname = models.CharField(max_length=200, null=True, blank=True)
-        
+    comments = GenericRelation('Comment', related_query_name='restaurant')    
     
     # class Meta:
     #     ordering = ['name', 'date_opened']
@@ -70,6 +74,7 @@ class Rating(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE,related_name='ratings')
     # rating = models.CharField(default=Rating.DEFAULT, choices=Rating.choices, max_length=1)
     rating = models.SmallIntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)])
+    comments = GenericRelation('Comment')
     
     def __str__(self):
         return f'Rating: {self.rating}'
@@ -79,6 +84,9 @@ class Sale(models.Model):
     income = models.DecimalField(max_digits=8, decimal_places=2) #This are the required
     expenditure = models.DecimalField(max_digits=8, decimal_places=2) #This are the required
     datetime = models.DateTimeField()
+    
+    def __str__(self):
+        return f'{self.restaurant.name}, Income: {self.income}'
     
     
 class Product(models.Model):
@@ -94,3 +102,12 @@ class Order(models.Model):
     
     def __str__(self):
         return f'{self.number_of_items} X {self.product.name}'
+
+# Crate a model named which will accessible to all other models
+class Comment(models.Model):
+    text = models.TextField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveSmallIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    
+

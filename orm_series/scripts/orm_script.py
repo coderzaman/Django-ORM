@@ -1301,40 +1301,197 @@ from django.db.models.functions import Upper
 #         time.sleep(60)
 
 
+# from django.contrib.contenttypes.models import ContentType
+# from core.models import Rating
+
+# def run():
+#     # Get all content types
+#     content_type = ContentType.objects.all()
+    
+#     # Filter only models from 'core' app
+#     core_app = content_type.filter(app_label='core')
+#     [print(c.model) for c in core_app]
+    
+#     print()  # Just spacing
+    
+#     # Get ContentType instance for 'restaurant' model
+#     content_type = ContentType.objects.get(app_label='core', model='restaurant')
+#     print(content_type.model)
+    
+#     # Get the actual model class from ContentType
+#     restaurant_model = content_type.model_class()
+#     print(restaurant_model.objects.all())
+    
+#     # Fetch an actual object of the model using ContentType (if name is unique)
+#     print(content_type.get_object_for_this_type(name='Chinese 2').restaurant_type)
+    
+#     # --- Rating Model Demo ---
+    
+#     # Get ContentType for a specific model class
+#     rating_content_type = ContentType.objects.get_for_model(Rating)
+#     print(rating_content_type)
+#     print(rating_content_type.model)
+    
+#     # Get model class from content type
+#     print(rating_content_type.model_class())
+    
+#     # Query all data from that model
+#     print(rating_content_type.model_class().objects.all())
+
+# Firstly we create a model with generic foreign key
+
+# class Comment(models.Model):
+#     text = models.TextField()
+#     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+#     object_id = models.PositiveSmallIntegerField()
+#     content_object = GenericForeignKey('content_type', 'object_id')
+     
+# Register this model in admin.py with other model
+
+# from core.models import Restaurant, Rating, Comment
+
+# # Register your models here.
+# class RestaurantAdmin(admin.ModelAdmin):
+#     list_display = ['id', 'name']
+    
+# class RatingAdmin(admin.ModelAdmin):
+#     list_display = ['id', 'rating']
+
+# class CommentAdmin(admin.ModelAdmin):
+#     list_display = ['text', 'content_type', 'object_id', 'content_object']
+
+
+# admin.site.register(Restaurant, RestaurantAdmin)
+# admin.site.register(Rating, RatingAdmin)
+# admin.site.register(Comment,CommentAdmin)
+
+# Add we goto http://127.0.0.1:8000/admin
+# Check and Restaurant, and Rating model where we can see instead string function representaion now show the list set in admin.py
+
+# Then go to the comment
+# there will be three field 
+# Text: for comment
+# content type: any of the models database
+# object id individual row/object id of selected models
+# and save then we can see
+#     Text               Content type      Object id       Content object
+# Nice restaurant!	Core | restaurant	     1	           Pizzeria 1
+
+# Now we can add another comment to Rating 
+
+# Now we go orm_script.py to further demonstration
+
+#import ContentType, GenericForeignKey,GenericRelation as well as some models
+
 from django.contrib.contenttypes.models import ContentType
-from core.models import Rating
+from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
+from core.models import Restaurant, Rating, Comment
 
 def run():
-    # Get all content types
-    content_type = ContentType.objects.all()
+    # Fetch all comment
+    comments = Comment.objects.all()
     
-    # Filter only models from 'core' app
-    core_app = content_type.filter(app_label='core')
-    [print(c.model) for c in core_app]
+    # Fetch content_object of each 
+    for comment in comments:
+        print(comment.content_object)
+        
+    # get first comment from it
+    comment = Comment.objects.first()
     
-    print()  # Just spacing
+    # get the stored content type 
+    ctype = comment.content_type
+    print(ctype)
     
-    # Get ContentType instance for 'restaurant' model
-    content_type = ContentType.objects.get(app_label='core', model='restaurant')
-    print(content_type.model)
+    # from the content type, fetch the associated generic FK instance 
+    model = ctype.get_object_for_this_type(pk=comment.object_id)
+    print(model)
+    print(type(model))
     
-    # Get the actual model class from ContentType
-    restaurant_model = content_type.model_class()
-    print(restaurant_model.objects.all())
+    # this is the code behind run in the django, this can be simplified with the generic foreign key
+    #  content_object = GenericForeignKey('content_type', 'object_id')
+    # so instead of this code we can write
     
-    # Fetch an actual object of the model using ContentType (if name is unique)
-    print(content_type.get_object_for_this_type(name='Chinese 2').restaurant_type)
+    comment = Comment.objects.first()
+    print(comment.content_object)
+    print(type(comment.content_object))
     
-    # --- Rating Model Demo ---
+    print()
+    # We can crete programmatically  create comment by just referencing the content object and not worrying about content_type and object id field 
     
-    # Get ContentType for a specific model class
-    rating_content_type = ContentType.objects.get_for_model(Rating)
-    print(rating_content_type)
-    print(rating_content_type.model)
+    restaurant = Restaurant.objects.all()[1]
+    # comment = Comment.objects.create(text='Awful Restaurant', content_object=restaurant)
     
-    # Get model class from content type
-    print(rating_content_type.model_class())
+    print(comment)
+    print(comment.__dict__)
     
-    # Query all data from that model
-    print(rating_content_type.model_class().objects.all())
+    # so it very when you have a generic foreign key link other object ot the model this we can passed the instance then it will be crate 
+    # we can tow one field name comment in Restaurant and Rating model for Generic Relation
+    # comments = GenericRelation('Comment')    
+    print()
+    restaurant = Restaurant.objects.get(id=2)
+    comments = restaurant.comments.all() #QuerySet [<Comment: Comment object (6)>]>
+    
+    print(comments)
+    
+    # So we can see here a reverse relation which is parent models to child models
+    # Now if we add another comment to id 2 restaurant and print again
+    comments = restaurant.comments.all() #QuerySet [<Comment: Comment object (6)>]>
+    # print(comments)  <QuerySet [<Comment: Comment object (6)>, <Comment: Comment object (7)>]>
+    
+    print()
+    print()
+    
+    # so we know have this link between the restaurant and all of its comments and this is similar to many to many manger in a way you can also add and remove comments using that generic relation so for example to add comments for this restaurant
+    
+    comments = restaurant.comments.add(
+        Comment.objects.create(text="ha ha eat e bastob", content_object=restaurant)
+    )
+    
+    # So it crate dynamically add new comment to the set of comments that are associated with the restaurant so under the hood the generic relation 
+    
+    # Just like many to many relation we can do other operations this gneraic ralation from the  parnt to the child 
+    
+    # so we can get no of restaurant associated with restaurant
+    print(restaurant.comments.count()) #4
+    
+    # remove last comment from database 
+    last_comment = restaurant.comments.last()
+    restaurant.comments.remove(last_comment)
+    print(restaurant.comments.count()) #3
+    
+    print()
+    # we can add the related name to the our generic relation, go to he restaurant model and add argument call related_query_name='restaurant' comment with associated with single restaurant so we keep that as singular form 
+    
+    # we can get only comment that were associated with italian restaurant 
+    comments = Comment.objects.filter(
+        restaurant__restaurant_type=Restaurant.TypeChoices.ITALIAN
+    )     
+    
+    print(comments)    #<QuerySet [<Comment: Comment object (1)>, <Comment: Comment object (6)>]>
+    
+    # Now we see an example how to crate generic relation in the  django admin interface 
+    # If we got admin panel go to restaurant we have any option to adding comment here. now going know how it would be done
+    
+    # We can add this comments  in line by  something called tabular inline in the django admin 
+    # go to the admin.py 
+    
+    # from django.contrib import admin
+    # from core.models import Restaurant,Comment
+    # from django.contrib.contenttypes.admin import GenericTabularInline
+
+    # # Register your models here.
+    # class CommentInline(GenericTabularInline):
+    #     model = Comment
+    #     max_num = 1
+
+    # class RestaurantAdmin(admin.ModelAdmin):
+    #     list_display = ['id', 'name']
+    #     inlines = [CommentInline]
+
+
+    # admin.site.register(Restaurant, RestaurantAdmin)
+    
+    # Now we go to  amin again. We see a text filed name Comment 
+    # we can change max_num increase or decrease no field we need 
+
 
